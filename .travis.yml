@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+- '8'
+sudo: required
+services:
+- docker
+notifications:
+  email: false
+  slack:
+    on_success: always
+    on_failure: always
+    rooms:
+      secure: mXXYPrTpAuFaX9HjWMTFRUxMYesib50IycryhSqadTEBjC8Ke7xPN2jG5Y/g2oXvzBGRtFuQPzFV7Wk/TGvUFgtSPWuMcyZxKn/2Nty47BJtpFkhWPfP1SuMCYZVgvq8o2ugFCd/WX2Q2u3EOkq4mL+0ubEl/v8YpWErxqVHxfToWLJHeXCPfFryi8di+es2ns2NWN3M13ldFN4s48B9Xfb76yRaoxpVBZ61JZV/ji3xAdH7RDGJW0QQr1I0gpFl1lyAQEk+HPE3Z6Q6AniJ8X9FpxHrK6IGGyqWr0m4YjWUPRFp2nWb7d9ynh+3VVhQR+n9OfZ2jxHnHrUs96aoqJ087k5owk348Nv0doFtH4rfuJHyXLy3JXSgnfclz7oieGNov/WiC1qXSHyUm8iVMuRcsKGiHpI6Twuevbl15ky9J+DJTuNjKLJj9ltsMH69taqR8ASsLkNBNv/ohtitqvTNhrqLLLpSMblNgvTx7NfIbaRStZG1/vm25kDDdErjnNM6kVN5DHjbyRKuI6WypFfKVpfygGNC1Chk/QJzkqImzwhj9yhsme3Y7F8eTGj1Z3ZWgJGp78d+xzMUZJjUDFkQCycHjYsfpuNSJ6aVimTY/cxLA3EftZKmuouH/S4nOmQ7sIm1YiSimT7Cx59CH1XKFC0HuHPDdqQBXt3LA2Q=
+script:
+- bash .travis.build.sh

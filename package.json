@@ -1,0 +1,46 @@
+{
+  "name": "kontrol",
+  "description": "Monitor and fix your Docker-based infrastructure",
+  "version": "0.1.0",
+  "main": "index.js",
+  "bin": "index.js",
+  "homepage": "https://github.com/kalisio/kontrol",
+  "keywords": [
+    "kargo",
+    "cesium"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kalisio/kontrol.git"
+  },
+  "author": {
+    "name": "Kalisio",
+    "url": "https://github.com/kalisio"
+  },
+  "contributors": [],
+  "bugs": {
+    "url": "https://github.com/kalisio/kontrol/issues"
+  },
+  "scripts": {
+    "start": "node .",
+    "test": "echo \"Warning: no test specified\"",
+    "changelog": "changelog -x build,ci,chore,docs,other,perf,refactor,revert,style,test",
+    "release:major": "npm run changelog -- -M && git add CHANGELOG.md && git commit -m \"chore: updated CHANGELOG.md\" && npm version --force major",
+    "release:minor": "npm run changelog -- -m && git add CHANGELOG.md && git commit -m \"chore: Updated CHANGELOG.md\" && npm version --force minor",
+    "release:patch": "npm run changelog -- -p && git add CHANGELOG.md && git commit -m \"chore: Updated CHANGELOG.md\" && npm version --force patch",
+    "postversion": "git push origin --tags"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "cron": "^1.8.0",
+    "dockerode": "^3.2.0",
+    "express": "^4.16.4",
+    "got": "^11.8.0",
+    "lodash": "^4.17.20",
+    "sift": "^13.4.0"
+  },
+  "devDependencies": {
+    "generate-changelog": "^1.8.0"
+  }
+}

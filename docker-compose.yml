@@ -1,0 +1,11 @@
+version: '3.3'
+
+services:
+  app:
+    build: 
+      context: .
+    image: kalisio/kontrol
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
