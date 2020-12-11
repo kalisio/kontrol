@@ -95,7 +95,8 @@ function plan() {
       job.isRunning = false
     })
     jobs[key] = { cronJob, health: {} }
-    cronJob.start()
+    // Start immediately or after a given delay
+    setTimeout(() => cronJob.start(), jobOptions.delay || 0)
   }
 }
 
