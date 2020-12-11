@@ -74,6 +74,7 @@ function plan() {
           statusCode: response.statusCode,
           statusMessage: response.statusMessage
         }
+        // Notify when going back to normal
         if (jobOptions.notify && _.get(job, 'previousHealth.error')) {
           console.log(`Notifying healthy state for task ${key}`)
           try {
@@ -88,7 +89,8 @@ function plan() {
         job.health = {
           error
         }
-        if (jobOptions.notify) {
+        // Notify when entering error state
+        if (jobOptions.notify && !_.get(job, 'previousHealth.error')) {
           console.log(`Notifying healthcheck failure for task ${key}`)
           try {
             const body = await jobOptions.notify(error)
