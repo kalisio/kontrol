@@ -9,3 +9,6 @@ services:
       - type: bind
         source: /var/run/docker.sock
         target: /var/run/docker.sock
+    environment:
+      - UNDER_TEST=1
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}

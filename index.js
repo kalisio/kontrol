@@ -5,7 +5,6 @@ const express = require('express')
 const cron = require('cron')
 const request = require('got')
 const _ = require('lodash')
-const sift = require('sift')
 const Docker = require('dockerode')
 
 const port = process.env.PORT || 8080
@@ -14,6 +13,20 @@ const config = require(process.env.CONFIG_FILEPATH || path.join(__dirname, 'conf
 let server
 let jobs = {}
 const docker = new Docker(config.docker)
+
+async function publishToSlack (task, body) {
+  if (!process.env.SLACK_WEBHOOK_URL) return
+  try {
+    await request({
+      url: process.env.SLACK_WEBHOOK_URL,
+      method: 'POST',
+      body: JSON.stringify(body)
+    })
+  } catch (error) {
+    // Allowed to fail to make healthcheck robust
+    console.error(`Notification for task ${task} failed`, error)
+  }
+}
 
 // Setup and launch server
 function serve() {
@@ -31,30 +44,13 @@ function serve() {
       response[key] = value.health
     })
 
-    return res.status(Math.random() > 0.5 ? 200 : 500).json(response)
+    // Report random errors when under test
+    if (process.env.UNDER_TEST) return res.status(Math.random() > 0.5 ? 200 : 500).json(response)
+    else return res.status(200).json(response)
   })
   // Start the server
   server = app.listen(port, () => {
     console.log('kontrol server listening at %d', port)
-  })
-}
-
-function templateValue (value, context) {
-  if (typeof value === 'string') {
-    const compiler = _.template(value)
-    return compiler(context)
-  } else {
-    return value
-  }
-}
-
-function templateObject (object, context) {
-  return _.mapValues(object, value => {
-    if (typeof value === 'object') {
-      return templateObject(value, context)
-    } else {
-      return templateValue(value, context)
-    }
   })
 }
 
@@ -73,36 +69,32 @@ function plan() {
       try {
         const response = await request(jobOptions)
         console.log(`Scheduled task ${key} response:`, response.statusCode, response.statusMessage)
+        job.health = {
+          statusCode: response.statusCode,
+          statusMessage: response.statusMessage
+        }
       } catch (error) {
         console.error(`Scheduled task ${key} error`, error)
-        console.log(`Executing commands for task ${key}`)
-        for (let i = 0; i < jobOptions.commands.length; i++) {
-          const { command, target, options, filter, result } = jobOptions.commands[i]
-          const object = _.get(job, `targets.${target}`, docker)
-          const templatedOptions = (typeof options === 'object' ? templateObject(options, job.targets) : templateValue(options, job.targets))
-          console.log(`Executing command ${command} for task ${key} on ${target} with options`, templatedOptions)
-          let data = await object[command](templatedOptions)
-          // When result is a list we can filter it to target a single object
-          if (filter) {
-            data = data.filter(sift(filter))
-            if (data.length === 1) data = data[0]
-          }
-          console.log(`Result of command ${command} for task ${key} on ${target}`, data)
-          // getXXX commands are used to retrive target objects like containers, services, etc.
-          // and then call some methods on this objects
-          if (result) {
-            console.log(`Storing result of command ${command} for task ${key} in ${result} object`)
-            _.set(job, `targets.${result}`, data)
-          }
-          if (command === 'remove') {
-            console.log(`Removing ${result} object for task ${key}`)
-            _.unset(job, `targets.${target}`)
-          }
+        job.health = {
+          error
+        }
+        console.log(`Notifying for task ${key}`)
+        try {
+          const body = await jobOptions.notify(error)
+          await publishToSlack (key, body)
+        } catch (error) {
+          console.error(`Notification for task ${key} failed`, error)
+        }
+        console.log(`Performing healing for task ${key}`)
+        try {
+          await jobOptions.heal(docker, _)
+        } catch (error) {
+          console.error(`Healing for task ${key} failed`, error)
         }
       }
       job.isRunning = false
     })
-    jobs[key] = { cronJob, health: {}, targets: { docker } }
+    jobs[key] = { cronJob, health: {} }
     cronJob.start()
   }
 }

@@ -9,15 +9,21 @@ module.exports = {
 			searchParams: {},
 			retry: 1,
 			timeout: 10000,
-			commands: [
-				{ command: 'listContainers', filter: { Names: { $elemMatch: { $regex: '.*kontrol.*' } } }, result: 'container' },
-				{ command: 'getContainer', options: '<%= container.Id %>', result: 'container' },
-				{ command: 'stop', target: 'container' },
-				{ command: 'remove', target: 'container' }
-				//{ command: 'listServices', filter: { Names: { $elemMatch: { $regex: '.*kontrol.*' } } }, result: 'service' },
-				//{ command: 'getService', options: '<%= service.Id %>', result: 'service' },
-				//{ command: 'remove', target: 'service' }
-			]
+			notify: (error) => {
+				return {
+				   attachments: [{
+            color: 'danger',
+            mrkdwn_in: ['text'],
+            text: `*kontrol healthcheck failed*\n${error}\nNow healing by restarting`
+          }]
+				}
+			},
+			heal: async (docker, _) => {
+				const containers = await docker.listContainers()
+				let container = _.find(containers, (container => container.Image === 'kalisio/kontrol'))
+				container = await docker.getContainer(container.Id)
+				await container.restart()
+			}
 		}
 	}
 }

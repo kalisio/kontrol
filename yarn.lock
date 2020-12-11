@@ -691,11 +691,6 @@ setprototypeof@1.1.1:
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.1.1.tgz#7e95acb24aa92f5885e0abef5ba131330d4ae683"
   integrity sha512-JvdAWfbXeIGaZ9cILp38HntZSFSo3mWg6xGcJJsd+d4aRMOqauag1C63dJfDw7OaMYwEbHMOxEZ1lqVRYP2OAw==
 
-sift@^13.4.0:
-  version "13.4.0"
-  resolved "https://registry.yarnpkg.com/sift/-/sift-13.4.0.tgz#859741aa76421dadc6cf07c0634088cbb120d0d3"
-  integrity sha512-sJAs3ujQjx6QVzWPKmqK1LhTAnpEiP2Q7zJi4VSmRYGAuz9SmlyAzo8w4jJQrrGXJb/QNUd0iJvD17dRezzfAA==
-
 split-ca@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/split-ca/-/split-ca-1.0.1.tgz#6c83aff3692fa61256e0cd197e05e9de157691a6"
