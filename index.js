@@ -68,11 +68,20 @@ function plan() {
       console.log(`Executing scheduled task ${key}`)
       job.previousHealth = job.health
       try {
-        const response = await request(jobOptions)
+        const response = await request(_.omit(jobOptions, ['cron', 'notify', 'heal', 'delay']))
         console.log(`Scheduled task ${key} response:`, response.statusCode, response.statusMessage)
         job.health = {
           statusCode: response.statusCode,
           statusMessage: response.statusMessage
+        }
+        if (jobOptions.notify && _.get(job, 'previousHealth.error')) {
+          console.log(`Notifying healthy state for task ${key}`)
+          try {
+            const body = await jobOptions.notify()
+            await publishToSlack(key, body)
+          } catch (error) {
+            console.error(`Notification for task ${key} failed`, error)
+          }
         }
       } catch (error) {
         console.error(`Scheduled task ${key} error`, error)
@@ -80,7 +89,7 @@ function plan() {
           error
         }
         if (jobOptions.notify) {
-          console.log(`Notifying for task ${key}`)
+          console.log(`Notifying healthcheck failure for task ${key}`)
           try {
             const body = await jobOptions.notify(error)
             await publishToSlack(key, body)
