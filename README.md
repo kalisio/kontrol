@@ -4,24 +4,27 @@
 
 **A controller that monitor and fix your Docker-based microservices infrastructure.**
 
-kontrol is a very lightweight application you can run as a Docker container or a Docker Swarm service. It runs requests against a set of resources (containers or services) to determine whether that resources are operating normally (a.k.a. health check). Whenever a health check fails, it launches commands against the Docker API in order to heal the infrastructure.
+kontrol is a very lightweight application you can run as a Docker container or a Docker Swarm service. It runs requests against a set of resources (containers or services) to determine whether that resources are operating normally (a.k.a. health check). Whenever a health check fails, it can launch commands against the Docker API in order to heal the infrastructure.
 
-kontrol includes Slack notification using [Incoming Webhook](https://api.slack.com/messaging/webhooks). Insert the webhook URL into the configuration file and enable the Slack integration. Anytime a healthcheck fails, the channel that you specified on Slack will receive a message.
+kontrol includes [Slack](https://slack.com/) notifications using [Incoming Webhook](https://api.slack.com/messaging/webhooks). Insert the webhook URL into your environment and enable the Slack integration. Anytime a healthcheck fails, the channel that you specified on Slack will receive a message.
 
 ## Why kontrol ?
 
-Docker provides a built-in [healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) for containers but it can be too much limited in some use cases. First, you will need to use a third-party tool anyway if you'd like to be notified on Slack about healthcheck failures. Second, the healing operation of Docker only consists in restarting the faulty container itself.
+Docker provides a built-in [healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) for containers but it can be too much limited in some use cases. First, you will need to use a third-party tool anyway if you'd like to be notified on Slack about healthcheck failures. Second, the healing operation of Docker only consists in restarting the faulty container itself. In a complex microservices scenario this might not be sufficient as some containers depend on others to be reachable.
 
-In a complex microservices scenario this might not be sufficient as some containers depend on others to be reachable. For instance, let imagine you have a service A using a service B, service A and B could be seen as healthy from the Docker point of view while the service B is not reachable from the service A for some reason (eg network failure, timeout, etc.). In that case it might be interesting to exhibit a healthcheck endpoint in service A providing the status of service B from the point of view of A. When that healthcheck fails in service A you should be notified and possibly the service B automatically restarted.
+For instance, let imagine you have a service A using a service B, service A and B could be seen as healthy from the Docker point of view while the service B is not reachable from the service A for some reason (eg network failure, timeout, etc.). In that case it might be interesting to exhibit a healthcheck endpoint in service A providing the status of service B from the point of view of A. When that healthcheck fails in service A you should be notified and possibly the service B automatically restarted.
+
+If you are looking for a solution to publish error logs to Slack you should better have a look to our [Slack adapter](https://github.com/kalisio/logspout-slack) for [logspout](https://github.com/gliderlabs/logspout).
 
 ## Configuring
 
 Most of the configuration options come from [got](https://github.com/sindresorhus/got) and [dockerode](https://github.com/apocas/dockerode) powering kontrol. The exported object in the `config.js` should be structured like this:
 * `docker`: the options used to initialize dockerode
-* `jobs`: a map of healthcheck and heal tasks to be performed, for each task identified by its key
+* `jobs`: a map of healthcheck and notification/heal tasks to be performed, for each task identified by its key
   * `cron`: the [CRON pattern](https://github.com/kelektiv/node-cron) to schedule it
-  * `notify`: function with the `error` object as input and returning the Slack message payload to be sent for notification
-  * `heal`: function with the `docker` object (i.e. dockerode instance) and `_` (lodash instance) as input and performing Docker command to heal the infrastructure
+  * `delay`: the delay in seconds before scheduling the task
+  * `notify`: function with the `error` object as input and returning the Slack message payload to be sent for notification (optional)
+  * `heal`: function with the `docker` object (i.e. dockerode instance) and `_` (lodash instance) as input and performing Docker command to heal the infrastructure (optional)
   * all others options are sent to got instance for the healthcheck request
 
 Here are the environment variables you can use to customize the behaviour:
@@ -33,7 +36,7 @@ Here are the environment variables you can use to customize the behaviour:
 
 ## Example
 
-The default `config.js` is a great example to start from. It basically checks the kontrol container itself and restart it on failure, like would Docker do. When under test mode, the kontrol container will randomly fail with a `500` status code, so that the container will restart as long as you don't kill it manually. To build and launch the example execute the following commands:
+The default [`config.js`](./config.js) is a great example to start from. It basically checks the kontrol container itself and restart it on failure, like would Docker do. When under test mode, the kontrol container will randomly fail with a `500` status code, so that the container will restart as long as you don't kill it manually. To build and launch the example execute the following commands:
 ```
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
 docker-compose build

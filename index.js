@@ -66,6 +66,7 @@ function plan() {
       }
       job.isRunning = true
       console.log(`Executing scheduled task ${key}`)
+      job.previousHealth = job.health
       try {
         const response = await request(jobOptions)
         console.log(`Scheduled task ${key} response:`, response.statusCode, response.statusMessage)
@@ -78,25 +79,39 @@ function plan() {
         job.health = {
           error
         }
-        console.log(`Notifying for task ${key}`)
-        try {
-          const body = await jobOptions.notify(error)
-          await publishToSlack (key, body)
-        } catch (error) {
-          console.error(`Notification for task ${key} failed`, error)
+        if (jobOptions.notify) {
+          console.log(`Notifying for task ${key}`)
+          try {
+            const body = await jobOptions.notify(error)
+            await publishToSlack(key, body)
+          } catch (error) {
+            console.error(`Notification for task ${key} failed`, error)
+          }
         }
-        console.log(`Performing healing for task ${key}`)
-        try {
-          await jobOptions.heal(docker, _)
-        } catch (error) {
-          console.error(`Healing for task ${key} failed`, error)
+        if (jobOptions.heal) {
+          console.log(`Performing healing for task ${key}`)
+          try {
+            await jobOptions.heal(docker, _)
+          } catch (error) {
+            console.error(`Healing for task ${key} failed`, error)
+            try {
+              await publishToSlack(key, {
+                attachments: [{
+                  color: 'danger',
+                  mrkdwn_in: ['text'],
+                  text: `*Healing for task ${key} failed*\n${error}`
+                }]
+              })
+            } catch (error) {}
+          }
         }
       }
       job.isRunning = false
     })
     jobs[key] = { cronJob, health: {} }
     // Start immediately or after a given delay
-    setTimeout(() => cronJob.start(), jobOptions.delay || 0)
+    const delay = jobOptions.delay || 0
+    setTimeout(() => cronJob.start(), 1000 * delay)
   }
 }
 
