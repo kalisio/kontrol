@@ -122,7 +122,7 @@ function plan() {
     jobs[key] = { cronJob, health: {} }
     // Start immediately or after a given delay
     const delay = jobOptions.delay || 0
-    setTimeout(() => cronJob.start(), 1000 * delay)
+    setTimeout(() => cronJob.start(), delay)
   }
 }
 
