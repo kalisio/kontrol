@@ -2,7 +2,7 @@ module.exports = {
   docker: {},
   jobs: {
     kontrol: {
-      cron: '*/3 * * * * *',
+      cron: '*/30 * * * * *',
       url: 'http://localhost:8080/healthcheck',
       method: 'GET',
       headers: {},
