@@ -4,7 +4,7 @@
 
 **A controller that monitor and fix your Docker-based microservices infrastructure.**
 
-kontrol is a very lightweight application you can run as a Docker container or a Docker Swarm service. It runs requests against a set of resources (containers or services) to determine whether that resources are operating normally (a.k.a. health check). Whenever a health check fails, it can launch commands against the Docker API in order to heal the infrastructure.
+kontrol is a very lightweight application you can run as a Docker container or a Docker Swarm service. It runs requests against a set of resources (containers or services) to determine whether those resources are operating normally (a.k.a. health check). Whenever a health check fails, it can launch commands against the Docker API in order to heal the infrastructure.
 
 kontrol includes [Slack](https://slack.com/) notifications using [Incoming Webhook](https://api.slack.com/messaging/webhooks). Insert the webhook URL into your environment and enable the Slack integration. Anytime a healthcheck fails, the channel that you specified on Slack will receive a message.
 
