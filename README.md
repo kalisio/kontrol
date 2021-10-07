@@ -1,5 +1,6 @@
 # kontrol
 
+[![Latest Release](https://img.shields.io/github/v/tag/kalisio/kontrol?sort=semver&label=latest)](https://github.com/kalisio/kontrol/releases)
 [![Build Status](https://app.travis-ci.com/kalisio/kontrol.png?branch=master)](https://app.travis-ci.com/kalisio/kontrol)
 
 **A controller that monitor and fix your Docker-based microservices infrastructure.**
